@@ -97,6 +97,8 @@ RUN if [ "$APKMIRROR" != "dl-cdn.alpinelinux.org" ]; then sed -i 's/dl-cdn.alpin
                 libedit-dev \
                 mercurial \
                 bash \
+                nano \
+                vim \
                 alpine-sdk \
                 findutils \
                 wkhtmltopdf \

@@ -2,22 +2,9 @@ FROM node:18.4.0-alpine3.16 AS nodejs
 
 FROM php:8.1.8-fpm-alpine3.16
 
-LABEL org.opencontainers.image.authors="Wang Junhua(tangramor@gmail.com)"
-LABEL org.opencontainers.image.url="https://www.github.com/tangramor/nginx-php8-fpm"
-
-# China alpine mirror: mirrors.ustc.edu.cn
-ARG APKMIRROR=dl-cdn.alpinelinux.org
-
 USER root
 
 WORKDIR /var/www/html
-
-ENV TZ=Asia/Shanghai
-
-# China php composer mirror: https://mirrors.cloud.tencent.com/composer/
-ENV COMPOSERMIRROR=""
-# China npm mirror: https://registry.npmmirror.com
-ENV NPMMIRROR=""
 
 COPY --from=nodejs /opt /opt
 COPY --from=nodejs /usr/local /usr/local

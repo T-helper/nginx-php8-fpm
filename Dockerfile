@@ -2,6 +2,8 @@ FROM node:18.4.0-alpine3.16 AS nodejs
 
 FROM php:8.1.8-fpm-alpine3.16
 
+ARG APKMIRROR=dl-cdn.alpinelinux.org
+
 USER root
 
 WORKDIR /var/www/html

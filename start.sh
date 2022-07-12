@@ -16,16 +16,16 @@ else
 fi
 
 # Enable custom nginx config files if they exist
-if [ -f /var/www/html/conf/nginx.conf ]; then
-  cp /var/www/html/conf/nginx.conf /etc/nginx/nginx.conf
+if [ -f /var/www/html/docker/conf/nginx.conf ]; then
+  cp /var/www/html/docker/conf/nginx.conf /etc/nginx/nginx.conf
 fi
 
-if [ -f /var/www/html/conf/nginx-site.conf ]; then
-  cp /var/www/html/conf/nginx-site.conf /etc/nginx/conf.d/default.conf
+if [ -f /var/www/html/docker/conf/nginx-site.conf ]; then
+  cp /var/www/html/docker/conf/nginx-site.conf /etc/nginx/conf.d/default.conf
 fi
 
-if [ -f /var/www/html/conf/nginx-site-ssl.conf ]; then
-  cp /var/www/html/conf/nginx-site-ssl.conf /etc/nginx/conf.d/default-ssl.conf
+if [ -f /var/www/docker/html/conf/nginx-site-ssl.conf ]; then
+  cp /var/www/html/docker/conf/nginx-site-ssl.conf /etc/nginx/conf.d/default-ssl.conf
 fi
 
 # Prevent config files from being filled to infinity by force of stop and restart the container
@@ -54,17 +54,6 @@ if [[ "$REAL_IP_HEADER" == "1" ]] ; then
  sed -i "s/#set_real_ip_from/set_real_ip_from/" /etc/nginx/conf.d/default.conf
  if [ ! -z "$REAL_IP_FROM" ]; then
   sed -i "s#172.16.0.0/12#$REAL_IP_FROM#" /etc/nginx/conf.d/default.conf
- fi
-fi
-
-# Do the same for SSL sites
-if [ -f /etc/nginx/conf.d/default-ssl.conf ]; then
- if [[ "$REAL_IP_HEADER" == "1" ]] ; then
-  sed -i "s/#real_ip_header X-Forwarded-For;/real_ip_header X-Forwarded-For;/" /etc/nginx/conf.d/default-ssl.conf
-  sed -i "s/#set_real_ip_from/set_real_ip_from/" /etc/nginx/conf.d/default-ssl.conf
-  if [ ! -z "$REAL_IP_FROM" ]; then
-   sed -i "s#172.16.0.0/12#$REAL_IP_FROM#" /etc/nginx/conf.d/default-ssl.conf
-  fi
  fi
 fi
 

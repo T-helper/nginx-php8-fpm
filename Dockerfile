@@ -1,4 +1,5 @@
 FROM node:18.4.0-alpine3.16 AS nodejs
+FROM madnight/docker-alpine-wkhtmltopdf as wkhtmltopdf_image
 
 FROM php:8.1.8-fpm-alpine3.16
 
@@ -24,6 +25,34 @@ ENV PHP_MODULE_DEPS gcc make libc-dev rabbitmq-c-dev zlib-dev libmemcached-dev c
 ENV NGINX_VERSION 1.23.0
 ENV NJS_VERSION   0.7.5
 ENV PKG_RELEASE   1
+
+RUN apk add --update --no-cache --wait 10 \
+  libstdc++ \
+  libx11 \
+  libxrender \
+  libxext \
+  libssl1.1 \
+  ca-certificates \
+  fontconfig \
+  freetype \
+  ttf-dejavu \
+  ttf-droid \
+  ttf-freefont \
+  ttf-liberation && \
+  apk add --update --no-cache --virtual .build-deps \
+  msttcorefonts-installer && \
+
+# Install microsoft fonts
+  update-ms-fonts && fc-cache -f && \
+
+# Clean up when done
+  rm -rf /tmp/* && apk del .build-deps
+
+
+
+
+
+COPY --from=wkhtmltopdf_image /bin/wkhtmltopdf /bin/
 
 RUN if [ "$APKMIRROR" != "dl-cdn.alpinelinux.org" ]; then sed -i 's/dl-cdn.alpinelinux.org/'$APKMIRROR'/g' /etc/apk/repositories; fi \
     && set -x \
@@ -101,7 +130,6 @@ RUN if [ "$APKMIRROR" != "dl-cdn.alpinelinux.org" ]; then sed -i 's/dl-cdn.alpin
                 vim \
                 alpine-sdk \
                 findutils \
-                wkhtmltopdf \
             && su nobody -s /bin/sh -c " \
                 export HOME=${tempDir} \
                 && cd ${tempDir} \
@@ -152,10 +180,10 @@ ENV fpm_conf /usr/local/etc/php-fpm.d/www.conf
 ENV php_vars /usr/local/etc/php/conf.d/docker-vars.ini
 
 RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
-    echo "upload_max_filesize = 100M"  >> ${php_vars} &&\
-    echo "post_max_size = 100M"  >> ${php_vars} &&\
+    echo "upload_max_filesize = 150M"  >> ${php_vars} &&\
+    echo "post_max_size = 150M"  >> ${php_vars} &&\
     echo "variables_order = \"EGPCS\""  >> ${php_vars} && \
-    echo "memory_limit = 128M"  >> ${php_vars} && \
+    echo "memory_limit = 256M"  >> ${php_vars} && \
     sed -i \
         -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" \
         -e "s/pm.max_children = 5/pm.max_children = 64/g" \

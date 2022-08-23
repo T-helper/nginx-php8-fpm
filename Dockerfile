@@ -30,6 +30,8 @@ RUN apk add --update --no-cache --wait 10 \
   libstdc++ \
   libx11 \
   libxrender \
+  libcurl \
+  curl-dev \
   libxext \
   libssl1.1 \
   ca-certificates \

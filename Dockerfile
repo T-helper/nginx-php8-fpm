@@ -132,6 +132,8 @@ RUN if [ "$APKMIRROR" != "dl-cdn.alpinelinux.org" ]; then sed -i 's/dl-cdn.alpin
                 vim \
                 alpine-sdk \
                 findutils \
+                imagemagick-dev \
+                imagemagick \
             && su nobody -s /bin/sh -c " \
                 export HOME=${tempDir} \
                 && cd ${tempDir} \
@@ -204,6 +206,7 @@ RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
     && cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
     # && sed -i 's/session.save_handler = files/session.save_handler = redis\nsession.save_path = "tcp:\/\/redis:6379"/g' /usr/local/etc/php/php.ini
 
+
 RUN curl http://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
     && apk add --no-cache php8-cli php8-dev libstdc++ mysql-client bash bash-completion shadow \
         supervisor git zip unzip coreutils libpng libmemcached-libs krb5-libs icu-libs \
@@ -214,12 +217,12 @@ RUN curl http://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --fil
     && apk add --no-cache --update --virtual .phpize-deps $PHPIZE_DEPS \
     && apk add --no-cache --update --virtual .all-deps $PHP_MODULE_DEPS \
     && docker-php-ext-install sockets gd bcmath intl soap mysqli pdo pdo_mysql pgsql pdo_pgsql zip ldap imap dom opcache \
-    && printf "\n\n" | pecl install amqp \
-    && docker-php-ext-enable amqp \
+    && printf "\n\n" | pecl install amqp  \
+    && docker-php-ext-enable amqp  \
     && printf "\n\n\n\n" | pecl install -o -f redis \
     && docker-php-ext-enable redis \
     && docker-php-ext-enable sockets \
-    && pecl install msgpack && docker-php-ext-enable msgpack \
+    && pecl install msgpack  && docker-php-ext-enable msgpack \
     && pecl install igbinary && docker-php-ext-enable igbinary \
     && printf "\n\n\n\n\n\n\n\n\n\n" | pecl install memcached \
     && docker-php-ext-enable memcached \
@@ -241,6 +244,25 @@ RUN curl http://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --fil
     && setcap 'cap_net_bind_service=+ep' /usr/local/bin/php \
     && mkdir -p /var/log/supervisor \
     && chmod +x /start.sh
+
+# RUN set -xe \
+#  && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+#  && apk add --no-cache bash imagemagick-dev \
+#  && git clone https://github.com/Imagick/imagick \
+#  && cd imagick \
+#  && git checkout master && git pull \
+#  && phpize && ./configure && make && make install \
+#  && cd .. && rm -Rf imagick \
+#  && docker-php-ext-enable imagick \
+#  && apk del .build-deps \
+#  && rm -rf /tmp/* /var/cache/apk/* 
+
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+RUN chmod uga+x /usr/local/bin/install-php-extensions && sync && \
+    install-php-extensions imagick
+ 
+
 
 EXPOSE 443 80
 

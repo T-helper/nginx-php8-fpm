@@ -2,25 +2,24 @@ FROM node:19.0.0-alpine3.16 AS nodejs
 
 FROM php:8.1.12-fpm-alpine3.16
 
-LABEL org.opencontainers.image.authors="Wang Junhua(tangramor@gmail.com)"
-LABEL org.opencontainers.image.url="https://www.github.com/tangramor/nginx-php8-fpm"
-
-# China alpine mirror: mirrors.ustc.edu.cn
 ARG APKMIRROR=dl-cdn.alpinelinux.org
 
 USER root
 
 WORKDIR /var/www/html
 
-ENV TZ=Asia/Shanghai
+ENV TZ=Etc/UTC
 
-# China php composer mirror: https://mirrors.cloud.tencent.com/composer/
+
 ENV COMPOSERMIRROR=""
-# China npm mirror: https://registry.npmmirror.com
+
 ENV NPMMIRROR=""
 
 COPY --from=nodejs /opt /opt
 COPY --from=nodejs /usr/local /usr/local
+
+COPY --from=surnet/alpine-wkhtmltopdf:3.16.2-0.12.6-full /bin/wkhtmltopdf /bin/wkhtmltopdf
+COPY --from=surnet/alpine-wkhtmltopdf:3.16.2-0.12.6-full /bin/wkhtmltoimage  /bin/wkhtmltoimage 
 
 COPY conf/supervisord.conf /etc/supervisord.conf
 COPY conf/php-fpm.conf /etc/supervisor/conf.d/php-fpm.conf
@@ -161,10 +160,10 @@ ENV fpm_conf /usr/local/etc/php-fpm.d/www.conf
 ENV php_vars /usr/local/etc/php/conf.d/docker-vars.ini
 
 RUN echo "cgi.fix_pathinfo=0" > ${php_vars} &&\
-    echo "upload_max_filesize = 100M"  >> ${php_vars} &&\
-    echo "post_max_size = 100M"  >> ${php_vars} &&\
+    echo "upload_max_filesize = 150M"  >> ${php_vars} &&\
+    echo "post_max_size = 150M"  >> ${php_vars} &&\
     echo "variables_order = \"EGPCS\""  >> ${php_vars} && \
-    echo "memory_limit = 128M"  >> ${php_vars} && \
+    echo "memory_limit = 512M"  >> ${php_vars} && \
     sed -i \
         -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" \
         -e "s/pm.max_children = 5/pm.max_children = 64/g" \
@@ -221,6 +220,26 @@ RUN curl http://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --fil
     && setcap 'cap_net_bind_service=+ep' /usr/local/bin/php \
     && mkdir -p /var/log/supervisor \
     && chmod +x /start.sh
+
+
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+RUN chmod uga+x /usr/local/bin/install-php-extensions && sync && \
+    install-php-extensions imagick
+
+RUN apk add --no-cache \
+ libstdc++ \
+ libx11 \
+ libxrender \
+ libxext \
+ ca-certificates \
+ fontconfig \
+ freetype \
+ ttf-dejavu \
+ ttf-droid \
+ ttf-freefont \
+ ttf-liberation \
+ ttf-freefont
 
 EXPOSE 443 80
 

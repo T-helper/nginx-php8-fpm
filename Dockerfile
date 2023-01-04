@@ -191,9 +191,11 @@ RUN curl http://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --fil
     && set -xe \
     && apk add --no-cache --update --virtual .phpize-deps $PHPIZE_DEPS \
     && apk add --no-cache --update --virtual .all-deps $PHP_MODULE_DEPS \
+    && pecl install mongodb \
     && docker-php-ext-install sockets gd bcmath intl soap mysqli pdo pdo_mysql pgsql pdo_pgsql zip ldap imap dom opcache \
     && printf "\n\n" | pecl install amqp \
     && docker-php-ext-enable amqp \
+    && docker-php-ext-enable mongodb \
     && printf "\n\n\n\n" | pecl install -o -f redis \
     && docker-php-ext-enable redis \
     && docker-php-ext-enable sockets \
@@ -239,7 +241,13 @@ RUN apk add --no-cache \
  ttf-droid \
  ttf-freefont \
  ttf-liberation \
- ttf-freefont
+ ttf-freefont \
+ jpegoptim \
+ optipng \
+ pngquant \
+ gifsicle \
+ libwebp \
+ libwebp-tools 
 
 EXPOSE 443 80
 

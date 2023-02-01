@@ -1,6 +1,6 @@
-FROM node:19.0.0-alpine3.16 AS nodejs
+FROM node:19.3.0-alpine3.16 AS nodejs
 
-FROM php:8.1.12-fpm-alpine3.16
+FROM php:8.2.1-fpm-alpine3.16
 
 ARG APKMIRROR=dl-cdn.alpinelinux.org
 
@@ -191,6 +191,7 @@ RUN curl http://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --fil
     && set -xe \
     && apk add --no-cache --update --virtual .phpize-deps $PHPIZE_DEPS \
     && apk add --no-cache --update --virtual .all-deps $PHP_MODULE_DEPS \
+    && apk add --no-cache linux-headers \
     && pecl install mongodb \
     && docker-php-ext-install sockets gd bcmath intl soap mysqli pdo pdo_mysql pgsql pdo_pgsql zip ldap imap dom opcache \
     && printf "\n\n" | pecl install amqp \
